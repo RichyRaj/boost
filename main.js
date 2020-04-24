@@ -2,6 +2,30 @@
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
 
+const { fork } = require('child_process');
+
+var monitorP = ''; // child process
+
+function startMonitor() {
+  monitorP = fork('./core/monitor.js');
+  if (monitorP) {
+    console.log("Sending in ")
+    monitorP.send({
+      type: 'start',
+      data: {}
+    })
+  }
+}
+
+function stopMonitor() {
+  if (monitorP) {
+      monitorP.send({
+        type: 'stop',
+        data: {}
+      })    
+  }
+}
+
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -18,6 +42,9 @@ function createWindow () {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
+
+  // Start Monitor
+  startMonitor();
 }
 
 // This method will be called when Electron has finished
@@ -29,6 +56,7 @@ app.whenReady().then(createWindow)
 app.on('window-all-closed', function () {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
+  stopMonitor();
   if (process.platform !== 'darwin') app.quit()
 })
 
