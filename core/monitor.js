@@ -9,10 +9,12 @@ const LogData = require('./logData.js')
 
 var config = {}, // TODO: 
     delaySeconds = 3 * 2,
+    logEverySeconds = 12,
+    cTick = 0, // Start at 0 and tick delaySeconds incrementally
     watchTimer = 0,
     doNotCollect = false, // flag for collecting data. Will be set to true when saving
     collectData = function() {
-        // Collects data every two minutes
+        // Collects data every delaySeconds
         // Is not persisted until end of config.logAfterSeconds
         if (doNotCollect) return;
         console.log("Collecting Data");
@@ -27,10 +29,13 @@ var config = {}, // TODO:
     },
     watch = function() {
         // Called every two minutes
-        console.log("CT " + moment().format("m"));
+        var ct = parseInt(moment().format("m"));
+        cTick += delaySeconds;
+        console.log("CT " + ct);
+        console.log("C Tick " + cTick);
         collectData();
-        if (moment().format("m") == "59" || moment().format("m") == "29" || moment().format("m") == "53") {
-            // Log every half an hour
+        if (cTick >= logEverySeconds) {
+            cTick = 0;
             doNotCollect = true;
             saveData();
             resetData();
