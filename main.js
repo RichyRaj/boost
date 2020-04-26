@@ -12,7 +12,9 @@ function startMonitor() {
     console.log("Sending in ")
     monitorP.send({
       type: 'start',
-      data: {}
+      data: {
+        userDataPath: app.getPath('userData')
+      }
     })
   }
 }

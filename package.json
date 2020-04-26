@@ -1,25 +1,26 @@
 {
-  "name": "electron-quick-start",
+  "name": "electron-dev-boost",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "A minimal Electron application to help boost developer productivity",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
-  "repository": "https://github.com/electron/electron-quick-start",
+  "repository": "https://github.com/RichyRaj/boost",
   "keywords": [
     "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
+    "productivity",
+    "boost",
+    "developer",
+    "time-management"
   ],
-  "author": "GitHub",
+  "author": "Richard Raj",
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "^8.2.3"
   },
   "dependencies": {
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "nedb": "^1.8.0"
   }
 }

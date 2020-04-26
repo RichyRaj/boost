@@ -4,14 +4,19 @@
  */
 'use strict';
 
-const moment = require('moment')
-const LogData = require('./logData.js')
+const path = require('path');
+const moment = require('moment');
+const DataStore = require('nedb');
+const LogData = require('./logData.js');
 
-var config = {}, // TODO: 
+const dbName = 'store.db';
+
+var config = {},
     delaySeconds = 3 * 2,
     logEverySeconds = 30,
+    db = '', // Database    
     cTick = 0, // Start at 0 and tick delaySeconds incrementally
-    watchTimer = 0,
+    watchTimer = 0,    
     doNotCollect = false, // flag for collecting data. Will be set to true when saving
     logCollection = [], // List of log data. Batch write every logEverySeconds
     collectData = function() {
@@ -24,15 +29,16 @@ var config = {}, // TODO:
         lData.hour = parseInt(moment().format("H")); // 0 - 23
         logCollection.push(lData);
     },
-    resetData = function() {
+    resetState = function() {
         console.log("Reset Data");
         logCollection = [];
     },
     saveData = function() {
-        // Writes to electron-store which will automatically persist
+        // Persistence
         // Configurable by config.logAfterSeconds
         console.log("Logging Data");
         console.log(logCollection.length);
+        db.insert(logCollection);
     },
     watch = function() {
         // Called every two minutes
@@ -45,11 +51,22 @@ var config = {}, // TODO:
             cTick = 0;
             doNotCollect = true;
             saveData();
-            resetData();
+            resetState();
             doNotCollect = false;
         }
     },
-    setup = function() {            
+    parseConfig = function(data) {
+        config = data || {};
+        console.log(config);
+        var filePath = path.join((config.userDataPath || '')  + ('/' + dbName));
+        console.log(filePath);
+        db = new DataStore({
+            filename: filePath,
+            autoload: true
+        });
+    },
+    setup = function(data) {
+        parseConfig(data);
         watchTimer = setInterval(watch, delaySeconds * 1000);
     },
     stop = function() {
@@ -67,7 +84,7 @@ process.on('message', (m) => {
         data = m.data || {};
     switch(type) {
         case 'start':
-            setup();
+            setup(data);
             break;
         case 'stop':
             stop();
