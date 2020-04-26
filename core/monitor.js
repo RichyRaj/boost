@@ -9,23 +9,30 @@ const LogData = require('./logData.js')
 
 var config = {}, // TODO: 
     delaySeconds = 3 * 2,
-    logEverySeconds = 12,
+    logEverySeconds = 30,
     cTick = 0, // Start at 0 and tick delaySeconds incrementally
     watchTimer = 0,
     doNotCollect = false, // flag for collecting data. Will be set to true when saving
+    logCollection = [], // List of log data. Batch write every logEverySeconds
     collectData = function() {
         // Collects data every delaySeconds
         // Is not persisted until end of config.logAfterSeconds
         if (doNotCollect) return;
         console.log("Collecting Data");
+        var lData = new LogData();
+        lData.date = moment().format("MMM Do YYYY");
+        lData.hour = parseInt(moment().format("H")); // 0 - 23
+        logCollection.push(lData);
     },
     resetData = function() {
         console.log("Reset Data");
+        logCollection = [];
     },
     saveData = function() {
         // Writes to electron-store which will automatically persist
         // Configurable by config.logAfterSeconds
         console.log("Logging Data");
+        console.log(logCollection.length);
     },
     watch = function() {
         // Called every two minutes
