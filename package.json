@@ -17,10 +17,13 @@
   "author": "Richard Raj",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^8.2.3"
+    "electron": "^8.2.3",
+    "electron-rebuild": "^1.10.1"
   },
   "dependencies": {
+    "active-win": "^6.1.0",
     "moment": "^2.24.0",
-    "nedb": "^1.8.0"
+    "nedb": "^1.8.0",
+    "ps-list": "^7.0.0"
   }
 }

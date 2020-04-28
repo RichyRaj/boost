@@ -4,11 +4,13 @@
  */
 'use strict'
 
+const AppData = require('./appData.js');
+
 function LogData() {
     var t = this;
     t.date = ''; // date of log
     t.hour = 0, // start hour (0 - 23)
-    t.apps = []; // list of apps that were running in this hour (App represented by AppData)    
+    t.appData = new AppData(); // Active application window at the time of this log
 }
 
 module.exports = LogData;
