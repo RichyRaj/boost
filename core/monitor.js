@@ -7,26 +7,87 @@
 const path = require('path');
 const moment = require('moment');
 const DataStore = require('nedb');
-const LogData = require('./logData.js');
 const activeWin = require('active-win');
+const LogData = require('./logData.js');
+const configManager = require('./configManager.js');
 
-const dbName = 'store.db';
+console.log("CF")
+console.log(configManager)
+
+const DB_NAME = 'store.db';
 
 var config = {},
     delaySeconds = 3 * 2,
     logEverySeconds = 30,
+    appMeta = {},
     db = '', // Database    
     cTick = 0, // Start at 0 and tick delaySeconds incrementally
     watchTimer = 0,    
     doNotCollect = false, // flag for collecting data. Will be set to true when saving
     logCollection = [], // List of log data. Batch write every logEverySeconds
     
+    processString = function(str, isName = false) {
+        // takes in a string, trims it, removes spaces, converts to lowercase and removes non-alphanumeric characters
+        // If is Name is true, will remove the file extension
+        if (isName) {
+            str = str.split('.')[0];
+        }
+        str = str.trim();
+        str = str.replace(/\s+/g, '');
+        str = str.toLowerCase();
+        return str.replace(/[^A-Za-z0-9]/g, '');        
+    },
+
+    classifyTitle = function(title) {
+        // Note: This is a very very inefficient solution
+        // TODO: Think of a better way to handle this    
+
+        for (var i = 0; i < appMeta.distraction.length; i++) {
+            var n = processString(appMeta.distraction[i]);
+            if (title.includes(n)) {
+                return 'np';
+            }
+        }
+
+        for (var i = 0; i < appMeta.productive.length; i++) {
+            var n = processString(appMeta.productive[i]);
+            if (title.includes(n)) {
+                return 'p';
+            }
+        }
+
+        return 'na';
+    },
+
+    classify = function(name, title) {
+        // Note: This is an inefficient solution
+        // TODO: Think of a better way to handle this
+
+        var pClass = 'na'; // start with neutral
+        var aName = processString(name, true);
+        var aTitle = processString(title);        
+
+        if (aName === 'chrome') {        
+            // Use title to classify
+            return classifyTitle(aTitle);
+        }    
+        if (appMeta.distraction.includes(aName)) {
+            pClass = 'np';
+        } else if (appMeta.productive.includes(aName)) {
+            pClass = 'p';
+        } else {            
+            console.log("Retyurbn " + "ps" + classifyTitle(aTitle));
+            return classifyTitle(aTitle);
+        }        
+        return pClass;
+    },
     logDataReducer = function(logs) {
         // Takes in a log of LogData records and reduces them grouping by title and adding duration
         var l = logs.length;
         var reduced = {};
         for (var i = 0; i < l; i++) {
             var log = logs[i];
+            console.log(log);
             var appD = log.appData;
             if (reduced[appD.title]) {
                 reduced[appD.title].appData.duration += appD.duration;
@@ -37,7 +98,10 @@ var config = {},
                 reduced[appD.title].appData.name = appD.name;
                 reduced[appD.title].appData.title = appD.title;
                 reduced[appD.title].appData.duration = appD.duration;
+                reduced[appD.title].appData.type = appD.type;
             }
+            console.log("Reduced")
+            console.log(reduced);
         }
         return Object.values(reduced);
     },
@@ -57,6 +121,7 @@ var config = {},
             appData.name = aName;
             appData.duration = delaySeconds;
             appData.title = aTitle;
+            appData.type = classify(aName, aTitle);
             logCollection.push(lData);
         })();
     },
@@ -67,7 +132,7 @@ var config = {},
     saveData = function(onSuccess) {
         // Persistence
         // Configurable by config.logAfterSeconds
-        console.log("Logging Data");        
+        console.log("Logging Data");                
         db.insert(logDataReducer(logCollection), function(_err) {
             var err = !(typeof _err === 'undefined');
             // TODO: Handle Error Separately
@@ -107,13 +172,17 @@ var config = {},
     },
     parseConfig = function(data) {
         config = data || {};
-        console.log(config);
-        var filePath = path.join((config.userDataPath || '')  + ('/' + dbName));
-        console.log(filePath);
+        var filePath = path.join((config.userDataPath || '')  + ('/' + DB_NAME));
         db = new DataStore({
             filename: filePath,
             autoload: true
         });
+        var userConfig = configManager.getConfig(config.userDataPath);
+        delaySeconds = userConfig.collectDataEverySeconds;
+        logEverySeconds = userConfig.saveDataEverySeconds;
+        appMeta = userConfig.apps;
+        console.log("Collecting every " + delaySeconds);
+        console.log("Logging every " + logEverySeconds);                
     },
     setup = function(data) {
         parseConfig(data);
