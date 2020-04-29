@@ -1,18 +1,54 @@
 <!DOCTYPE html>
 <html>
+  
   <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">    
-    <title>Hello World!</title>
-  </head>
-  <body>
-    <h1>Hello World!</h1>
-    We are using Node.js <span id="node-version"></span>,
-    Chromium <span id="chrome-version"></span>,
-    and Electron <span id="electron-version"></span>.
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="main.css">    
 
-    <!-- You can also require other files to run in this process -->    
-  </body>  
+    <script>window.$ = window.jQuery = require('./jquery-3.5.0.min.js');</script>    
+    <!-- <script src="./jquery-3.5.0.min.js"></script> -->
+    <script src="semantic/dist/semantic.min.js"></script>
+    <script src="index.js"></script>
+
+    <title>Boost !</title>
+
+  </head>
+
+  <body>
+    <!-- <div class="ui fixed sidebar inverted vertical menu surface-light"> -->
+    <div class="ui thin vertical inverted left visible sidebar menu surface-light"> 
+      <div class = home_icon>
+        <i class="big fire icon"></i>
+      </div>
+      <a class="item">
+        Reports
+      </a>
+      <a class="item" href="https://github.com/RichyRaj/boost" target="_blank">
+        About
+      </a>      
+    </div>
+    <div class="pusher surface">
+      <div class="main-page">
+        <h2 class="app-title">Boost</h2>
+        <h5 class="app-caption">Supercharge your productivity</h5>
+        <div class="ui huge statistic">
+          <div class="value cur_time">
+            00:00
+          </div>
+          <div class="label cur_status">
+            Not Tracking
+          </div>
+        </div>
+        <div class="controls">
+          <button class="huge ui toggle button">
+            Start
+          </button>
+        </div>
+      </div>
+    </div>
+</body>
 </html>

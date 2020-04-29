@@ -1,0 +1,56 @@
+.ui.visible.sidebar.surface-light {
+    background-color: rgb(51, 51, 51);    
+}
+
+.ui.visible.sidebar.surface-light * {
+    text-align: center;
+}
+
+.ui.visible.sidebar.surface-light .item {
+    margin: 10px;
+    color: #cccccc;
+}
+
+.ui.visible.sidebar.surface-light i {
+    color: #f9a825;
+    margin: 10px;
+}
+
+.main-page {
+    text-align: center;
+    margin-right: 150px;
+}
+
+.main-page .app-title{
+    color: #f9a825;
+}
+
+.main-page .app-caption{
+    color: #BB86FC;    
+    margin-top: -10px;
+}
+
+.main-page .ui.huge.statistic .cur_time{
+    color: #f9a825;
+}
+
+.main-page .ui.huge.statistic .cur_status{
+    color: #BB86FC;
+    margin-top: 20px;
+}
+
+body {
+    background-color: #121212;
+}
+
+.main-page .ui.huge.statistic {
+    margin-top: 100px;
+}
+
+.controls {
+    margin-top: 100px;
+}
+
+.controls .huge.ui.toggle.button{
+    background-color: #03DAC6;
+}

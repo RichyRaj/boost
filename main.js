@@ -4,6 +4,7 @@ const path = require('path')
 
 const { fork } = require('child_process');
 
+
 var monitorP = ''; // child process
 
 function startMonitor() {
@@ -44,6 +45,12 @@ function createWindow () {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
+
+  mainWindow.webContents.on('new-window', function(e, url) {
+    e.preventDefault();
+    console.log("CLICk")
+    require('electron').shell.openExternal(url);
+  });
 
   // Start Monitor
   startMonitor();
