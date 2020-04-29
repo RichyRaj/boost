@@ -64,11 +64,34 @@ var config = {},
         console.log("Reset Data");
         logCollection = [];
     },
-    saveData = function() {
+    saveData = function(onSuccess) {
         // Persistence
         // Configurable by config.logAfterSeconds
         console.log("Logging Data");        
-        db.insert(logDataReducer(logCollection));
+        db.insert(logDataReducer(logCollection), function(_err) {
+            var err = !(typeof _err === 'undefined');
+            // TODO: Handle Error Separately
+            console.log("Write Success !");
+            onSuccess();
+        });
+    },
+    saveAndResetData = function(_kill) {
+        var kill = (typeof _kill === 'boolean') ? _kill : false;
+        var onSuccessFullSave = function () {
+            resetState();
+            doNotCollect = false;
+            if (kill) {
+                clearInterval(watchTimer);
+                watchTimer = 0;
+                console.log("All Clear");
+                process.send({
+                    type: 'stop-complete',
+                    data: {}
+                });
+            }
+        };
+        doNotCollect = true;
+        saveData(onSuccessFullSave);        
     },
     watch = function() {
         // Called every two minutes
@@ -79,10 +102,7 @@ var config = {},
         collectData();
         if (cTick >= logEverySeconds) {
             cTick = 0;
-            doNotCollect = true;
-            saveData();
-            resetState();
-            doNotCollect = false;
+            saveAndResetData();
         }
     },
     parseConfig = function(data) {
@@ -100,9 +120,7 @@ var config = {},
         watchTimer = setInterval(watch, delaySeconds * 1000);
     },
     stop = function() {
-        clearInterval(watchTimer);
-        watchTimer = 0;
-        console.log("All Clear");                        
+        saveAndResetData(true);
     };
 
 

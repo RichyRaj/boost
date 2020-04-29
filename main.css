@@ -52,5 +52,11 @@ body {
 }
 
 .controls .huge.ui.toggle.button{
-    background-color: #03DAC6;
+    background-color: #4caf50;
+    color: #cccccc;
+}
+
+.controls .huge.ui.toggle.button.active{
+    background-color: #d32f2f;
+    color: #cccccc;
 }

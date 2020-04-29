@@ -1,14 +1,20 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
-const path = require('path')
+const {app, BrowserWindow, ipcMain} = require('electron')
+const path = require('path');
 
 const { fork } = require('child_process');
 
 
-var monitorP = ''; // child process
+const STATE_IDLE = 'idle',
+  STATE_TRACKING = 'tracking',
+  WILL_EXIT = 'will_exit';
+
+var monitorP = '', // child process
+  appState = STATE_IDLE;
 
 function startMonitor() {
   monitorP = fork('./core/monitor.js');
+  listenToMonitor();
   if (monitorP) {
     console.log("Sending in ")
     monitorP.send({
@@ -20,14 +26,45 @@ function startMonitor() {
   }
 }
 
-function stopMonitor() {
+function killMonitor() {
   if (monitorP) {
-      monitorP.send({
-        type: 'stop',
-        data: {}
-      })    
+    console.log("Killing the Monitor ... ");
+    monitorP.kill();
+    monitorP = '';
+  }
+  if (appState === WILL_EXIT) {
+    console.log("All Cleanup Done !");
+    app.exit(0);
   }
 }
+
+function stopMonitor() {  
+  if (monitorP) {
+    monitorP.send({
+      type: 'stop',
+      data: {}
+    });
+  }
+}
+
+function listenToMonitor() {
+  monitorP.on('message', (m) => {
+    console.log("From Monitor Child: " + m);
+      var type = m.type || '',
+          data = m.data || {};
+      switch(type) {
+          case 'stop-complete':
+              killMonitor();
+              break;        
+          default:
+              console.log(type + " not supported !");
+              break;
+  
+      }
+  });
+}
+
+
 
 function createWindow () {
   // Create the browser window.
@@ -52,8 +89,25 @@ function createWindow () {
     require('electron').shell.openExternal(url);
   });
 
-  // Start Monitor
-  startMonitor();
+  ipcMain.on('fromHome', (e, data) => {
+    switch(data.type) {
+      case 'start':
+        console.log("Starting the Engine");
+        // Start Monitor
+        appState = STATE_TRACKING;
+        startMonitor();
+        break;
+      case 'stop':
+        console.log("Stopping the Engine");
+        // Stop Monitor
+        appState = STATE_IDLE;
+        stopMonitor();
+        break;
+      default:
+        console.log("Cannot Understand");
+        break;        
+    }
+  });  
 }
 
 // This method will be called when Electron has finished
@@ -61,11 +115,19 @@ function createWindow () {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(createWindow)
 
+app.on('will-quit', function (e) {
+  if (appState === STATE_TRACKING) {
+    appState = WILL_EXIT;
+    e.preventDefault();
+    stopMonitor();
+  }
+})
+
+
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  stopMonitor();
   if (process.platform !== 'darwin') app.quit()
 })
 

@@ -1,5 +1,44 @@
-const moment = require('moment');
+function init() {
+    const moment = require('moment'),
+        ipc = require('electron').ipcRenderer;
 
-window.setInterval(function() {
-    $('.main-page .ui.huge.statistic .cur_time').html(moment().format("HH:mm"));
-}, 1000);
+
+    const ON_STATE = 'on',
+        OFF_STATE = 'off';
+            
+    var cState = OFF_STATE,
+        timeText = $('.main-page .ui.huge.statistic .cur_time'),
+        statusText = $('.main-page .ui.huge.statistic .cur_status'),
+        tglButton = $('.main-page .controls #mainToggle');
+
+    tglButton.click(function(_e) {
+        _e.preventDefault();
+        if (tglButton.hasClass('active')) {
+            tglButton.removeClass('active');
+            tglButton.html('Start');
+            statusText.html("Not Tracking");
+            cState = OFF_STATE;
+            ipc.send('fromHome', {
+                type: 'stop',
+                data: {}
+            });
+        } else {
+            tglButton.addClass('active');
+            tglButton.html('Stop');
+            cState = ON_STATE;
+            statusText.html("Tracking ... ");
+            ipc.send('fromHome', {
+                type: 'start',
+                data: {}
+            });
+        }
+    });
+
+    window.setInterval(function() {
+        timeText.html(moment().format("HH:mm"));
+    }, 1000);
+}
+
+$(document).ready(function() {
+    init();
+});
