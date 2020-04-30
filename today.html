@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">    
+    <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="main.css">    
+    <script>window.$ = window.jQuery = require('./jquery-3.5.0.min.js');</script>        
+    <script src="semantic/dist/semantic.min.js"></script>    
+    <script src="today.js"></script>
+    <title>Boost !</title>
+
+  </head>
+
+  <body>
+    <div class="ui thin vertical inverted left visible sidebar menu surface-light"> 
+        <div class = home_icon>
+          <a href ="index.html">
+            <i class="big fire icon"></i>
+          </a>
+          <a class="item" href="today.html">
+            How You Spent Your Time Today (Minutes)
+          </a>
+          <a class="item" href="today.html">
+            Time you were Productive today
+          </a>
+          <a class="item" href="pr.html">
+            Apps You Used Today When Productive
+          </a>
+          <a class="item" href="upr.html">
+            Apps You Used Today When Un-Productive
+          </a>
+          <a class="item" href="upr.html">
+            Apps You Used Today When Neutral
+          </a>
+        </div>        
+    </div>
+    <div class="pusher surface">
+        <div class="chartContainer">
+            <canvas id="appUsage"></canvas>
+        </div>
+    </div>
+  </body>
+</html>

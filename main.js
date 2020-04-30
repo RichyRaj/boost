@@ -4,6 +4,8 @@ const path = require('path');
 
 const { fork } = require('child_process');
 
+const moment = require('moment');
+const DataStore = require('nedb');
 
 const STATE_IDLE = 'idle',
   STATE_TRACKING = 'tracking',
@@ -11,6 +13,48 @@ const STATE_IDLE = 'idle',
 
 var monitorP = '', // child process
   appState = STATE_IDLE;
+
+const DB_NAME = 'store.db';
+
+var mainWindow = "";
+
+// =============== Data Collection Methods ===============
+function getTodayAppUsage() {
+  var filePath = path.join(app.getPath('userData')  + ('/' + DB_NAME)),
+    db = new DataStore({
+      filename: filePath,
+      autoload: true
+    });
+  
+    db.find({ date: moment().format("MMM Do YYYY") }, function (err, docs) {
+      var pr = 0,
+        upr = 0,
+        ne = 0;
+      docs.map((doc) => {
+        var aData = doc.appData || {},
+          aType = aData.type || ''
+          aDur = aData.duration || 0;
+        if (aType == 'p') {
+          pr += aDur;
+        } else if (aType == 'np') {
+          upr += aDur;
+        } else {
+          ne += aDur;
+        }
+      })
+      var sendData = {
+        type: 'todayAppUsage',
+        data: {
+          prTime: pr,
+          uprTime: upr,
+          nTime: ne
+        }
+      };      
+      mainWindow.webContents.send('dataReady', sendData);
+    });
+
+}
+// =============== Data Collection Methods ===============
 
 function startMonitor() {
   monitorP = fork('./core/monitor.js');
@@ -64,15 +108,15 @@ function listenToMonitor() {
   });
 }
 
-
-
 function createWindow () {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
+    backgroundColor: '#121212',
     width: 800,
     height: 600,
+    show: false,
     webPreferences: {
-      // preload: path.join(__dirname, 'preload.js')
+      // preload: path.join(__dirname, 'preload.js')      
       nodeIntegration: true
     }
   })
@@ -88,6 +132,10 @@ function createWindow () {
     console.log("CLICk")
     require('electron').shell.openExternal(url);
   });
+  
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show()
+  })
 
   ipcMain.on('fromHome', (e, data) => {
     switch(data.type) {
@@ -108,6 +156,20 @@ function createWindow () {
         break;        
     }
   });  
+
+  ipcMain.on('getData', (e, data) => {
+    switch(data.type) {
+      case 'todayAppUsage':
+        getTodayAppUsage();
+        console.log("Collecting Data...");        
+        break;      
+      default:
+        console.log("Cannot Understand");
+        break;        
+    }
+  });  
+
+
 }
 
 // This method will be called when Electron has finished
