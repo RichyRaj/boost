@@ -41,8 +41,6 @@ function init() {
                 })
                 renderAppUsage(cData);
               break;
-            case 'timeToday':              
-              break;
             default:
               console.log("Cannot Understand");
               break;        

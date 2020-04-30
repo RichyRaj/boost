@@ -26,13 +26,13 @@ function getTodayAppUsage() {
       autoload: true
     });
   
-    db.find({ date: moment().format("MMM Do YYYY") }, function (err, docs) {
+    db.find({ date: moment().subtract(1, 'day').format("MMM Do YYYY") }, function (err, docs) {
       var pr = 0,
         upr = 0,
         ne = 0;
       docs.map((doc) => {
         var aData = doc.appData || {},
-          aType = aData.type || ''
+          aType = aData.type || '',
           aDur = aData.duration || 0;
         if (aType == 'p') {
           pr += aDur;
@@ -52,8 +52,71 @@ function getTodayAppUsage() {
       };      
       mainWindow.webContents.send('dataReady', sendData);
     });
-
 }
+
+function getTimeHoursToday() {  
+  var filePath = path.join(app.getPath('userData')  + ('/' + DB_NAME)),
+    db = new DataStore({
+      filename: filePath,
+      autoload: true
+    }),
+    hourBreak = {
+      0: 0,        
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0,
+      7: 0,
+      8: 0,
+      9: 0,
+      10: 0,
+      11: 0,
+      12: 0,
+      13: 0,
+      14: 0,
+      15: 0,
+      16: 0,
+      17: 0,
+      18: 0,
+      19: 0,
+      20: 0,
+      21: 0,
+      22: 0,
+      23: 0        
+    },
+    prHourBreak = JSON.parse(JSON.stringify(hourBreak)),
+    uprHourBreak = JSON.parse(JSON.stringify(hourBreak)),
+    neHourBreak = JSON.parse(JSON.stringify(hourBreak));
+    // TODO: REmove Sub
+  db.find({ date: moment().subtract(1, 'day').format("MMM Do YYYY") }, function (err, docs) {      
+    console.log(docs);
+    docs.map((doc) => {
+      var aData = doc.appData || {},
+        aType = aData.type || '',
+        aHour = doc.hour || 0, // TODO :Find a better way
+        aDur = aData.duration || 0;        
+        if (aType == 'p') {
+          prHourBreak[aHour] += aDur;
+        } else if (aType == 'np') {
+          uprHourBreak[aHour] += aDur;
+        } else {
+          neHourBreak[aHour] += aDur;
+        }
+    });      
+    var sendData = {
+      type: 'timeToday',
+      data: {
+        prHourBreak: prHourBreak,
+        uprHourBreak: uprHourBreak,
+        neHourBreak: neHourBreak
+      }
+    };      
+    mainWindow.webContents.send('dataReady', sendData);
+  });  
+}
+
 // =============== Data Collection Methods ===============
 
 function startMonitor() {
@@ -158,11 +221,13 @@ function createWindow () {
   });  
 
   ipcMain.on('getData', (e, data) => {
+    console.log("Collecting Data..." + data.type);        
     switch(data.type) {
       case 'todayAppUsage':
-        getTodayAppUsage();
-        console.log("Collecting Data...");        
-        break;      
+        getTodayAppUsage();        
+        break;
+      case 'timeToday':
+        getTimeHoursToday();
       default:
         console.log("Cannot Understand");
         break;        
