@@ -299,6 +299,10 @@ function createWindow () {
     width: 800,
     height: 600,
     show: false,
+    center: true,
+    resizable: false,
+    title: "Boost",
+    autoHideMenuBar: true,
     webPreferences: {
       // preload: path.join(__dirname, 'preload.js')      
       nodeIntegration: true
