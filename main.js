@@ -6,6 +6,7 @@ const { fork } = require('child_process');
 
 const moment = require('moment');
 const DataStore = require('nedb');
+const configManager = require('./core/configManager.js');
 
 const STATE_IDLE = 'idle',
   STATE_TRACKING = 'tracking',
@@ -115,6 +116,126 @@ function getTimeHoursToday() {
     };      
     mainWindow.webContents.send('dataReady', sendData);
   });  
+}
+
+function processString(str, isName = false) {
+  // takes in a string, trims it, removes spaces, converts to lowercase and removes non-alphanumeric characters
+  // If is Name is true, will remove the file extension
+  if (isName) {
+      str = str.split('.')[0];
+  }
+  str = str.trim();
+  str = str.replace(/\s+/g, '');
+  str = str.toLowerCase();
+  return str.replace(/[^A-Za-z0-9]/g, '');        
+}
+
+function getUserDefinedAppName(sysName, sysTitle, aType) {
+  var userConfig = configManager.getConfig(app.getPath('userData')),
+    appMeta = userConfig.apps,
+    aName = processString(sysName, true);
+    aTitle = processString(sysTitle),
+    getByTitle = function() {
+      if (aType == 'p') {
+        for (var i = 0; i < appMeta.productive.length; i++) { 
+          var n = processString(appMeta.productive[i]);
+          if (aTitle.includes(n)) {
+              return n;
+          }
+        }
+      } else if (aType == 'np') {
+        for (var i = 0; i < appMeta.distraction.length; i++) {
+          var n = processString(appMeta.distraction[i]);
+          if (aTitle.includes(n)) {
+              return n;
+          }
+        }
+      }
+      return aName;
+    };
+
+  if (aName === 'chrome') {
+    // Use title to classify
+    return getByTitle(aTitle);
+  }
+
+  if (aType == 'p') {
+    return appMeta.productive[appMeta.productive.indexOf(aName)]
+  } else if (aType == 'np') {
+    return appMeta.distraction[appMeta.productive.indexOf(aName)]
+  } else {
+    return getByTitle(aTitle);
+  }
+}
+
+function getUnProductiveApps() {
+  var filePath = path.join(app.getPath('userData')  + ('/' + DB_NAME)),
+    db = new DataStore({
+      filename: filePath,
+      autoload: true
+    });    
+  
+    db.find({ date: moment().subtract(1, 'day').format("MMM Do YYYY") }, function (err, docs) {
+      var prList = {};
+      docs.map((doc) => {
+        var aData = doc.appData || {},
+          aName = aData.name || '',
+          aTitle = aData.title || '',
+          aType = aData.type || '',
+          aDur = aData.duration || 0,
+        uName = processString(aName, true);
+        console.log(" FOr " + aName  + " ss " + uName)
+        if (aType == 'np') {
+          if (prList[uName]) {
+            prList[uName] += aDur;
+          } else {
+            prList[uName] = aDur;
+          }
+        }
+      })
+      var sendData = {
+        type: 'todayUprApps',
+        data: {
+          prList: prList
+        }
+      };
+      mainWindow.webContents.send('dataReady', sendData);
+    });
+}
+
+function getProductiveApps() {
+  var filePath = path.join(app.getPath('userData')  + ('/' + DB_NAME)),
+    db = new DataStore({
+      filename: filePath,
+      autoload: true
+    });    
+  
+    db.find({ date: moment().subtract(1, 'day').format("MMM Do YYYY") }, function (err, docs) {
+      var prList = {};
+      docs.map((doc) => {
+        var aData = doc.appData || {},
+          aName = aData.name || '',
+          aTitle = aData.title || '',
+          aType = aData.type || '',
+          aDur = aData.duration || 0,
+        uName = processString(aName, true);
+        console.log(" FOr " + aName  + " ss " + uName)
+        if (aType == 'p') {     
+          if (prList[uName]) {
+            prList[uName] += aDur;
+          } else {
+            prList[uName] = aDur;
+          }
+        }
+      })
+      var sendData = {
+        type: 'todayPrApps',
+        data: {
+          prList: prList
+        }
+      };
+      mainWindow.webContents.send('dataReady', sendData);
+    });
 }
 
 // =============== Data Collection Methods ===============
@@ -228,6 +349,13 @@ function createWindow () {
         break;
       case 'timeToday':
         getTimeHoursToday();
+        break;
+      case 'todayPrApps':
+        getProductiveApps();
+        break;
+      case 'todayUprApps':
+        getUnProductiveApps();
+        break;
       default:
         console.log("Cannot Understand");
         break;        

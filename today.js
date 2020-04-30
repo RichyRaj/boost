@@ -1,4 +1,3 @@
-
 function renderAppUsage(cData) {
     var Chart = require('chart.js');
     var ct = document.getElementById('appUsage'),
