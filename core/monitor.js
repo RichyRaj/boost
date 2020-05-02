@@ -75,8 +75,7 @@ var config = {},
             pClass = 'np';
         } else if (appMeta.productive.includes(aName)) {
             pClass = 'p';
-        } else {            
-            console.log("Retyurbn " + "ps" + classifyTitle(aTitle));
+        } else {                        
             return classifyTitle(aTitle);
         }        
         return pClass;
@@ -86,8 +85,7 @@ var config = {},
         var l = logs.length;
         var reduced = {};
         for (var i = 0; i < l; i++) {
-            var log = logs[i];
-            console.log(log);
+            var log = logs[i];            
             var appD = log.appData;
             if (reduced[appD.title]) {
                 reduced[appD.title].appData.duration += appD.duration;
@@ -99,9 +97,7 @@ var config = {},
                 reduced[appD.title].appData.title = appD.title;
                 reduced[appD.title].appData.duration = appD.duration;
                 reduced[appD.title].appData.type = appD.type;
-            }
-            console.log("Reduced")
-            console.log(reduced);
+            }            
         }
         return Object.values(reduced);
     },

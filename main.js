@@ -91,7 +91,6 @@ function getTimeHoursToday() {
     uprHourBreak = JSON.parse(JSON.stringify(hourBreak)),
     neHourBreak = JSON.parse(JSON.stringify(hourBreak));    
   db.find({ date: moment().format("MMM Do YYYY") }, function (err, docs) {      
-    console.log(docs);
     docs.map((doc) => {
       var aData = doc.appData || {},
         aType = aData.type || '',
@@ -182,8 +181,7 @@ function getUnProductiveApps() {
           aTitle = aData.title || '',
           aType = aData.type || '',
           aDur = aData.duration || 0,
-        uName = processString(aName, true);
-        console.log(" FOr " + aName  + " ss " + uName)
+        uName = processString(aName, true);        
         if (aType == 'np') {
           if (prList[uName]) {
             prList[uName] += aDur;
@@ -217,8 +215,7 @@ function getProductiveApps() {
           aTitle = aData.title || '',
           aType = aData.type || '',
           aDur = aData.duration || 0,
-        uName = processString(aName, true);
-        console.log(" FOr " + aName  + " ss " + uName)
+        uName = processString(aName, true);        
         if (aType == 'p') {     
           if (prList[uName]) {
             prList[uName] += aDur;
@@ -253,8 +250,7 @@ function startMonitor() {
   }
 }
 
-function killMonitor() {
-  console.log("To Kill Monitor: ");
+function killMonitor() {  
   if (monitorP) {
     console.log("Killing the Monitor ... ");
     monitorP.kill();
