@@ -7,8 +7,8 @@
 const FILE_NAME = 'appConfig.json';
 
 const CONFIG_DEFAULT = {
-    saveDataEverySeconds: 35,
-    collectDataEverySeconds: 7,
+    saveDataEverySeconds: 300,
+    collectDataEverySeconds: 60,
     apps: {
         distraction: ["youtube", "reddit", "hacker news", "whatsapp", "facebook", "twitter", "steam"],
         productive: ["notion", "gmail", "stack overflow", "github", "visual studio code", "vim", "atom", "xcode", "terminal", "mintty", "toggl"]

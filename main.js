@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron');
 const path = require('path');
 
 const { fork } = require('child_process');
@@ -27,7 +27,7 @@ function getTodayAppUsage() {
       autoload: true
     });
   
-    db.find({ date: moment().subtract(1, 'day').format("MMM Do YYYY") }, function (err, docs) {
+    db.find({ date: moment().format("MMM Do YYYY") }, function (err, docs) {
       var pr = 0,
         upr = 0,
         ne = 0;
@@ -89,9 +89,8 @@ function getTimeHoursToday() {
     },
     prHourBreak = JSON.parse(JSON.stringify(hourBreak)),
     uprHourBreak = JSON.parse(JSON.stringify(hourBreak)),
-    neHourBreak = JSON.parse(JSON.stringify(hourBreak));
-    // TODO: REmove Sub
-  db.find({ date: moment().subtract(1, 'day').format("MMM Do YYYY") }, function (err, docs) {      
+    neHourBreak = JSON.parse(JSON.stringify(hourBreak));    
+  db.find({ date: moment().format("MMM Do YYYY") }, function (err, docs) {      
     console.log(docs);
     docs.map((doc) => {
       var aData = doc.appData || {},
@@ -175,7 +174,7 @@ function getUnProductiveApps() {
       autoload: true
     });    
   
-    db.find({ date: moment().subtract(1, 'day').format("MMM Do YYYY") }, function (err, docs) {
+    db.find({ date: moment().format("MMM Do YYYY") }, function (err, docs) {
       var prList = {};
       docs.map((doc) => {
         var aData = doc.appData || {},
@@ -210,7 +209,7 @@ function getProductiveApps() {
       autoload: true
     });    
   
-    db.find({ date: moment().subtract(1, 'day').format("MMM Do YYYY") }, function (err, docs) {
+    db.find({ date: moment().format("MMM Do YYYY") }, function (err, docs) {
       var prList = {};
       docs.map((doc) => {
         var aData = doc.appData || {},
@@ -255,6 +254,7 @@ function startMonitor() {
 }
 
 function killMonitor() {
+  console.log("To Kill Monitor: ");
   if (monitorP) {
     console.log("Killing the Monitor ... ");
     monitorP.kill();
@@ -267,6 +267,7 @@ function killMonitor() {
 }
 
 function stopMonitor() {  
+  console.log("To Stop Monitor: ");
   if (monitorP) {
     monitorP.send({
       type: 'stop',
